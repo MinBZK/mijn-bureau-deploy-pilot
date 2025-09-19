@@ -1,0 +1,131 @@
+global:
+  domain: "apps.bzk-openbsw-001.gn2.ssc.rijksapps.nl"
+  resourcesPreset: "small"
+
+cluster:
+  networking:
+    domain: cluster.local
+    podSubnet:
+      - "10.0.0.0/14"
+    serviceSubnet:
+      - "172.30.0.0/16"
+
+  ingress:
+    type: haproxy-openshift
+    annotations:
+      haproxy.router.openshift.io/ip_whitelist: 0.0.0.0/0
+
+authentication:
+  oidc:
+    issuer: https://id.pps.bzk-openbsw-001.gn2.ssc.rijksapps.nl/realms/master
+    authorization_endpoint: https://id.pps.bzk-openbsw-001.gn2.ssc.rijksapps.nl/realms/master/protocol/openid-connect/auth
+    token_endpoint: https://id.pps.bzk-openbsw-001.gn2.ssc.rijksapps.nl/realms/master/protocol/openid-connect/token
+    introspection_endpoint: https://id.pps.bzk-openbsw-001.gn2.ssc.rijksapps.nl/realms/master/protocol/openid-connect/token/introspect
+    userinfo_endpoint: https://id.pps.bzk-openbsw-001.gn2.ssc.rijksapps.nl/realms/master/protocol/openid-connect/userinfo
+    end_session_endpoint: https://id.pps.bzk-openbsw-001.gn2.ssc.rijksapps.nl/realms/master/protocol/openid-connect/logout
+    jwks_uri:	https://id.pps.bzk-openbsw-001.gn2.ssc.rijksapps.nl/realms/master/protocol/openid-connect/certs
+
+resource:
+  collabora:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+  nextcloud:
+    nextcloud:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+
+# disable pod security standards for openshift since it has its own method
+security:
+  default:
+    containerSecurityContext:
+      enabled: false
+
+    podSecurityContext:
+      enabled: false
+
+application:
+  grist:
+    enabled: true
+    namespace: mijn-bureau-grist
+
+  ollama:
+    enabled: false
+    namespace: mijn-bureau-ollama
+
+  keycloak:
+    enabled: true
+    namespace: mijn-bureau-id
+
+  chat:
+    enabled: true
+    namespace: mijn-bureau-element
+
+  nextcloud:
+    enabled: true
+    namespace: mijn-bureau-nextcloud
+
+  collabora:
+    enabled: true
+    namespace: mijn-bureau-collabora
+    enableInsecureCollWSD: true
+
+  livekit:
+    enabled: true
+    namespace: mijn-bureau-livekit
+
+  meet:
+    enabled: true
+    namespace: mijn-bureau-meet
+
+tls:
+  keycloak:
+    - {}
+  grist:
+    - {}
+  synapse:
+    - {}
+  chat:
+    - {}
+  nextcloud:
+    - {}
+  collabora:
+    - {}
+  livekit:
+    - {}
+
+
+autoscaling:
+  horizontal:
+    grist:
+      minReplicas: 1
+    keycloak:
+      minReplicas: 1
+
+
+pvc:
+  grist:
+    grist:
+      storageClass: 20Gi
+      size: ~
+      accessModes: []
+
+    minio:
+      size: 20Gi
+
+
+  nextcloud:
+    nextcloud:
+      storageClass: nfs-retain
+      size: 8Gi
+      accessModes: []
+
+    minio:
+      size: 100Gi
